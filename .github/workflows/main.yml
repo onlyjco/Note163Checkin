@@ -8,15 +8,22 @@ on:
 
 jobs:
   build:
-
     if: github.actor == github.repository_owner
     runs-on: ubuntu-latest
-
     steps:
-    - uses: actions/checkout@main
-    - name: Run
-      uses: coactions/setup-xvfb@main
+    - uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
       with:
-        run: dotnet Program.cs
-      env: 
+        dotnet-version: '10.0.x'
+
+    - name: Install Chrome
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y chromium-browser || sudo apt-get install -y chromium
+
+    - name: Run
+      env:
         CONF: ${{ secrets.CONF }}
+      run: xvfb-run --auto-servernum --server-args="-screen 0 1280x1024x24" dotnet Program.cs
